@@ -114,7 +114,6 @@ html,body{height:100%;overflow:hidden;background:#0c0c10;font-family:-apple-syst
 
 <script>
 (function(){
-  // ── 1. Ler e decodificar config do hash ──
   const hash = window.location.hash.slice(1);
   if (!hash) {
     showError('Nenhuma configuração encontrada na URL.<br><a href="index.html">Criar um link</a>');
@@ -130,30 +129,42 @@ html,body{height:100%;overflow:hidden;background:#0c0c10;font-family:-apple-syst
   }
 
   if (!cfg.targetUrl) {
-    showError('URL de destino não encontrada na configuração.');
+    showError('Configuração incompleta.');
     return;
   }
 
-  // ── 2. Carregar site no iframe ──
-  const frame = document.getElementById('frame');
+  // Define o texto fictício da URL no topo
   const tbUrl = document.getElementById('tb-url');
-  try { tbUrl.textContent = new URL(cfg.targetUrl).hostname; } catch{ tbUrl.textContent = cfg.targetUrl; }
+  tbUrl.textContent = cfg.targetUrl;
 
-  frame.src = cfg.targetUrl;
+  // Carrega a imagem enviada pela URL (ou usa o mockup padrão caso não exista)
+  const imagemFinalDoSite = cfg.bgSiteUrl || "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426&auto=format&fit=crop"; 
+  
+  const frame = document.getElementById('frame');
+  frame.srcdoc = `
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+      <meta charset="UTF-8">
+      <style>
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #0c0c10; }
+        .site-bg {
+          width: 100%;
+          height: 100%;
+          background-image: url('${imagemFinalDoSite}');
+          background-size: cover;
+          background-position: top center;
+          background-repeat: no-repeat;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="site-bg"></div>
+    </body>
+    </html>
+  `;
 
-  // Fallback: se o iframe bloquear (X-Frame-Options), abre numa nova tab
-  frame.addEventListener('load', () => {
-    try {
-      // Tenta acessar o contentDocument — vai lançar erro se bloqueado
-      const doc = frame.contentDocument || frame.contentWindow.document;
-      if (!doc || !doc.body) throw new Error('blocked');
-    } catch(e) {
-      // Site bloqueou iframe — mostramos aviso mas mantemos o banner
-      showFrameBlockedNotice(cfg);
-    }
-  });
-
-  // ── 3. Montar banner ──
+  // ── 3. Montar banner flutuante ──
   const banner = document.getElementById('banner');
   const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
@@ -211,21 +222,6 @@ html,body{height:100%;overflow:hidden;background:#0c0c10;font-family:-apple-syst
     const el = document.getElementById('error');
     document.getElementById('error-msg').innerHTML = msg;
     el.style.display = 'flex';
-  }
-
-  function showFrameBlockedNotice(cfg) {
-    // Site bloqueou iframe: exibe página de aviso com link para abrir
-    frame.srcdoc = `<!DOCTYPE html><html><body style="margin:0;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:sans-serif;background:#f5f5f8;color:#333;text-align:center;padding:32px">
-      <div style="font-size:48px;margin-bottom:16px">🔒</div>
-      <h2 style="margin-bottom:10px;font-size:20px">Este site não permite ser incorporado</h2>
-      <p style="color:#666;font-size:14px;margin-bottom:24px;max-width:400px;line-height:1.6">
-        Alguns sites grandes (UOL, G1, etc.) bloqueiam exibição em frames por segurança.
-        O banner do seu anúncio ainda aparece corretamente.
-      </p>
-      <a href="${cfg.targetUrl}" target="_blank" style="padding:10px 24px;background:#6c63ff;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
-        Abrir ${new URL(cfg.targetUrl).hostname} em nova aba ↗
-      </a>
-    </body></html>`;
   }
 })();
 </script>
