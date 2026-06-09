@@ -33,7 +33,6 @@ header{
 .logo b{color:var(--accent)}
 .logo span{color:var(--text)}
 .logo em{color:var(--accent2);font-style:normal}
-.pill{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#6c63ff22;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;vertical-align:middle;margin-left:6px}
 nav a{color:var(--muted);text-decoration:none;font-size:13px;margin-left:20px;transition:color .2s}
 nav a:hover{color:var(--text)}
 
@@ -93,12 +92,12 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
 
 /* ── Preview ── */
 .preview-shell{
-  background:repeating-linear-gradient(45deg,#111118,#111118 12px,#0e0e15 12px,#0e0e15 24px);
+  background-size: cover;
+  background-position: top center;
   border-radius:10px;overflow:hidden;position:relative;
   height:220px;border:1px solid var(--border);
   display:flex;align-items:center;justify-content:center;
 }
-.preview-shell::after{content:'prévia do site de destino';font-size:12px;color:#2e2e3e;letter-spacing:.05em;pointer-events:none}
 #prev-wrap{position:absolute;pointer-events:none}
 
 /* banner bar */
@@ -138,7 +137,6 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
 .btn-p:hover{filter:brightness(1.12)}
 .btn-g{background:transparent;color:var(--muted);border:1px solid var(--border)}
 .btn-g:hover{color:var(--text);border-color:var(--text)}
-.btn-ok{background:var(--success);color:#0c0c10}
 
 /* ── Toast ── */
 #toast{
@@ -149,10 +147,8 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
 }
 #toast.show{transform:translateY(0);opacity:1}
 
-/* ── Divider ── */
 .sep{height:1px;background:var(--border);margin:20px 0}
 
-/* ── Logo upload ── */
 .logo-upload-row{display:flex;align-items:center;gap:10px}
 .logo-upload-row input[type=text]{flex:1}
 #logo-thumb{width:36px;height:36px;border-radius:6px;object-fit:cover;border:1px solid var(--border);display:none}
@@ -170,19 +166,18 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
 
 <div class="hero">
   <h1>Coloque seu anúncio em<br><span>qualquer site da internet</span></h1>
-  <p>Configure o banner, gere o link e compartilhe. Quem clicar vê o site com seu anúncio flutuando.</p>
+  <p>Configure o banner, gere o link e compartilhe. Quem clicar vê o site simulado com seu anúncio flutuando.</p>
 </div>
 
 <div class="wrap">
 
-  <!-- ── COLUNA ESQUERDA: Configuração ── -->
   <div>
     <div class="card" style="margin-bottom:20px">
-      <div class="card-title">URLs</div>
+      <div class="card-title">URLs obrigatórias</div>
 
       <div class="field">
-        <label>URL do site de destino</label>
-        <input id="targetUrl" type="url" placeholder="https://g1.globo.com/noticia/..." />
+        <label>URL fictícia do site de destino (apenas para o topo)</label>
+        <input id="targetUrl" type="url" placeholder="g1.globo.com" value="meusite.com.br" />
       </div>
       <div class="field">
         <label>URL do produto afiliado (link do botão)</label>
@@ -214,10 +209,15 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
     </div>
 
     <div class="card" style="margin-bottom:20px">
-      <div class="card-title">Aparência</div>
+      <div class="card-title">Aparência & Cenário</div>
 
       <div class="field">
-        <label>Estilo do banner</label>
+        <label>Imagem de fundo do site (Link da Imagem/Banner)</label>
+        <input id="bgSiteUrl" type="text" placeholder="https://link-da-imagem.com/print.jpg" oninput="render()" />
+      </div>
+
+      <div class="field">
+        <label>Estilo do banner flutuante</label>
         <div class="styles">
           <button class="style-btn on" onclick="setStyle(this,'bar')">📌 Barra</button>
           <button class="style-btn" onclick="setStyle(this,'card')">🃏 Card</button>
@@ -226,14 +226,14 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
 
       <div class="row2">
         <div class="field">
-          <label>Cor de fundo</label>
+          <label>Cor de fundo banner</label>
           <div class="clr-row">
             <input type="color" id="bgColor" value="#6c63ff" oninput="render()"/>
             <span id="bgHex">#6c63ff</span>
           </div>
         </div>
         <div class="field">
-          <label>Cor do texto</label>
+          <label>Cor do texto banner</label>
           <div class="clr-row">
             <input type="color" id="textColor" value="#ffffff" oninput="render()"/>
             <span id="textHex">#ffffff</span>
@@ -278,21 +278,19 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
     </div>
   </div>
 
-  <!-- ── COLUNA DIREITA: Preview + Gerar ── -->
   <div>
     <div class="card" style="margin-bottom:20px">
       <div class="card-title">Preview ao vivo</div>
-      <div class="preview-shell">
+      <div class="preview-shell" id="previewShell">
         <div id="prev-wrap">
-          <!-- banner injetado por JS -->
-        </div>
+          </div>
       </div>
     </div>
 
     <div class="card">
       <div class="card-title">Link para compartilhar</div>
       <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6">
-        Clique em <strong style="color:var(--text)">Gerar link</strong>. Quem abrir verá o site com seu banner por cima — sem precisar de servidor.
+        Clique em <strong style="color:var(--text)">Gerar link</strong>. Quem abrir verá a imagem de fundo escolhida com o seu banner interativo por cima.
       </p>
 
       <div class="out-box" id="outBox">Preencha as URLs e clique em Gerar link</div>
@@ -306,7 +304,7 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
       <div class="sep"></div>
 
       <p style="font-size:12px;color:var(--muted);line-height:1.7">
-        💡 <strong style="color:var(--text)">Como funciona:</strong> toda a configuração fica codificada na própria URL (após o <code style="color:var(--accent)">#</code>). O <code>viewer.html</code> lê isso e exibe o site no iframe com seu banner flutuante. <strong style="color:var(--text)">Não precisa de banco de dados ou servidor.</strong>
+        💡 <strong style="color:var(--text)">Como funciona:</strong> Os dados e o link da imagem ficam criptografados na própria URL. Sem banco de dados ou complicação.
       </p>
     </div>
   </div>
@@ -318,6 +316,7 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
 let currentPos   = 'bottom-left';
 let currentStyle = 'bar';
 let generatedUrl = '';
+const DEFAULT_BG = "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426&auto=format&fit=crop";
 
 const POS_STYLE = {
   'bottom-left':   'bottom:12px;left:12px;right:auto;top:auto;',
@@ -348,6 +347,7 @@ function render() {
   const textColor = v('textColor').value;
   const btnColor  = v('btnColor').value;
   const logoUrl   = v('logoUrl').value.trim();
+  const bgSiteUrl = v('bgSiteUrl').value.trim() || DEFAULT_BG;
   const delay     = parseFloat(v('delay').value);
   const opacity   = parseFloat(v('opacity').value);
 
@@ -356,6 +356,9 @@ function render() {
   v('btnHex').textContent     = btnColor;
   v('delayVal').textContent   = delay + 's';
   v('opacityVal').textContent = Math.round(opacity*100) + '%';
+
+  // Atualiza a imagem de fundo do preview shell
+  v('previewShell').style.backgroundImage = `url('${bgSiteUrl}')`;
 
   // logo thumb
   const thumb = v('logo-thumb');
@@ -403,6 +406,7 @@ function generate() {
     delay:     parseFloat(v('delay').value),
     opacity:   parseFloat(v('opacity').value),
     logoUrl:   v('logoUrl').value.trim(),
+    bgSiteUrl: v('bgSiteUrl').value.trim() // Salva o link da imagem na URL gerada
   };
 
   const hash  = btoa(unescape(encodeURIComponent(JSON.stringify(cfg))));
