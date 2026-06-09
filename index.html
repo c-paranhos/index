@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>LinkBanner — Anúncios em qualquer site</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0c10;
+  --card:#15151c;
+  --border:#25252f;
+  --accent:#6c63ff;
+  --accent2:#ff6584;
+  --text:#f0eff8;
+  --muted:#7a7990;
+  --success:#43d9a2;
+  --r:10px;
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── Header ── */
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 32px;
+  background:rgba(21,21,28,0.85);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:100;
+}
+.logo{font-size:19px;font-weight:700;letter-spacing:-0.5px}
+.logo b{color:var(--accent)}
+.logo span{color:var(--text)}
+.logo em{color:var(--accent2);font-style:normal}
+.pill{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#6c63ff22;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;vertical-align:middle;margin-left:6px}
+nav a{color:var(--muted);text-decoration:none;font-size:13px;margin-left:20px;transition:color .2s}
+nav a:hover{color:var(--text)}
+
+/* ── Hero ── */
+.hero{text-align:center;padding:56px 24px 40px}
+.hero h1{font-size:clamp(28px,5vw,48px);font-weight:800;line-height:1.1;letter-spacing:-1px;margin-bottom:16px}
+.hero h1 span{
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text
+}
+.hero p{font-size:16px;color:var(--muted);max-width:480px;margin:0 auto 10px;line-height:1.6}
+
+/* ── Layout ── */
+.wrap{max-width:1060px;margin:0 auto;padding:0 20px 60px;display:grid;grid-template-columns:1fr 420px;gap:28px;align-items:start}
+@media(max-width:860px){.wrap{grid-template-columns:1fr}}
+
+/* ── Card ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px}
+.card-title{font-size:14px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';display:inline-block;width:3px;height:14px;border-radius:2px;background:var(--accent)}
+
+/* ── Form ── */
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em}
+.field input,.field select,.field textarea{
+  width:100%;padding:10px 14px;
+  background:#0c0c10;border:1px solid var(--border);border-radius:var(--r);
+  color:var(--text);font-size:14px;font-family:var(--font);
+  transition:border-color .2s,box-shadow .2s;
+}
+.field input:focus,.field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px #6c63ff22}
+.field input::placeholder,.field textarea::placeholder{color:#3a3a4a}
+.field textarea{resize:vertical;min-height:52px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* ── Color ── */
+.clr-row{display:flex;align-items:center;gap:8px}
+.clr-row input[type=color]{width:38px;height:36px;padding:3px;border:1px solid var(--border);border-radius:8px;cursor:pointer;background:#0c0c10}
+.clr-row span{font-size:13px;color:var(--muted);font-family:monospace}
+
+/* ── Range ── */
+input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
+.range-row{display:flex;align-items:center;gap:10px}
+.range-val{font-size:13px;color:var(--accent);font-family:monospace;min-width:36px;text-align:right}
+
+/* ── Positions ── */
+.positions{display:flex;gap:7px;flex-wrap:wrap}
+.pos-btn{padding:5px 13px;font-size:12px;border:1px solid var(--border);border-radius:6px;cursor:pointer;background:transparent;color:var(--muted);transition:all .15s}
+.pos-btn:hover{border-color:var(--accent);color:var(--text)}
+.pos-btn.on{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+
+/* ── Styles ── */
+.styles{display:flex;gap:7px}
+.style-btn{flex:1;padding:7px;font-size:12px;border:1px solid var(--border);border-radius:8px;cursor:pointer;background:transparent;color:var(--muted);text-align:center;transition:all .15s}
+.style-btn:hover{border-color:var(--accent);color:var(--text)}
+.style-btn.on{background:#6c63ff22;border-color:var(--accent);color:var(--accent);font-weight:600}
+
+/* ── Preview ── */
+.preview-shell{
+  background:repeating-linear-gradient(45deg,#111118,#111118 12px,#0e0e15 12px,#0e0e15 24px);
+  border-radius:10px;overflow:hidden;position:relative;
+  height:220px;border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+}
+.preview-shell::after{content:'prévia do site de destino';font-size:12px;color:#2e2e3e;letter-spacing:.05em;pointer-events:none}
+#prev-wrap{position:absolute;pointer-events:none}
+
+/* banner bar */
+.ban-bar{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 16px;border-radius:8px;
+  font-family:var(--font);font-size:13px;
+  box-shadow:0 6px 28px rgba(0,0,0,.45);
+  width:360px;max-width:calc(100% - 32px);
+}
+.ban-bar .bm{flex:1;font-weight:500;line-height:1.3}
+.ban-bar .bb{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;white-space:nowrap;border:none}
+.ban-bar .bx{font-size:20px;opacity:.5;background:none;border:none;line-height:1;cursor:pointer;flex-shrink:0}
+
+/* banner card */
+.ban-card{
+  padding:14px 16px;border-radius:10px;
+  font-family:var(--font);font-size:13px;
+  box-shadow:0 6px 28px rgba(0,0,0,.45);
+  width:240px;max-width:calc(100% - 32px);
+  text-align:center;
+}
+.ban-card .logo-img{width:40px;height:40px;border-radius:8px;object-fit:cover;margin:0 auto 10px;display:block}
+.ban-card .bm{font-weight:600;line-height:1.4;margin-bottom:10px;font-size:14px}
+.ban-card .bb{width:100%;padding:8px;border-radius:6px;font-size:13px;font-weight:700;border:none;cursor:pointer}
+.ban-card .bx-card{position:absolute;top:6px;right:8px;font-size:16px;opacity:.4;background:none;border:none;cursor:pointer;line-height:1}
+
+/* ── Output ── */
+.out-box{
+  background:#0c0c10;border:1px solid var(--border);border-radius:var(--r);
+  padding:12px 16px;font-size:12px;font-family:monospace;word-break:break-all;
+  color:var(--accent);line-height:1.6;min-height:48px;
+}
+.btn-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.btn{padding:10px 18px;font-size:13px;font-weight:700;border-radius:var(--r);border:none;cursor:pointer;display:flex;align-items:center;gap:7px;transition:all .15s;text-decoration:none}
+.btn-p{background:linear-gradient(135deg,var(--accent),#9b59ff);color:#fff}
+.btn-p:hover{filter:brightness(1.12)}
+.btn-g{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.btn-g:hover{color:var(--text);border-color:var(--text)}
+.btn-ok{background:var(--success);color:#0c0c10}
+
+/* ── Toast ── */
+#toast{
+  position:fixed;bottom:24px;right:24px;
+  background:var(--success);color:#0c0c10;
+  padding:12px 20px;border-radius:var(--r);font-size:14px;font-weight:700;
+  transform:translateY(80px);opacity:0;transition:all .3s;pointer-events:none;z-index:9999;
+}
+#toast.show{transform:translateY(0);opacity:1}
+
+/* ── Divider ── */
+.sep{height:1px;background:var(--border);margin:20px 0}
+
+/* ── Logo upload ── */
+.logo-upload-row{display:flex;align-items:center;gap:10px}
+.logo-upload-row input[type=text]{flex:1}
+#logo-thumb{width:36px;height:36px;border-radius:6px;object-fit:cover;border:1px solid var(--border);display:none}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><b>Link</b><span>Banner</span> <em>Pro</em></div>
+  <nav>
+    <a href="index.html">Editor</a>
+    <a href="viewer.html">Testar viewer</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <h1>Coloque seu anúncio em<br><span>qualquer site da internet</span></h1>
+  <p>Configure o banner, gere o link e compartilhe. Quem clicar vê o site com seu anúncio flutuando.</p>
+</div>
+
+<div class="wrap">
+
+  <!-- ── COLUNA ESQUERDA: Configuração ── -->
+  <div>
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title">URLs</div>
+
+      <div class="field">
+        <label>URL do site de destino</label>
+        <input id="targetUrl" type="url" placeholder="https://g1.globo.com/noticia/..." />
+      </div>
+      <div class="field">
+        <label>URL do produto afiliado (link do botão)</label>
+        <input id="btnUrl" type="url" placeholder="https://go.hotmart.com/XXXXX" />
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title">Conteúdo do banner</div>
+
+      <div class="field">
+        <label>Texto do anúncio</label>
+        <textarea id="adText" rows="2" placeholder="Ex: Álbum Oficial Copa do Mundo 2026 Panini" oninput="render()"
+        >Álbum Oficial Copa do Mundo 2026 — Edição Limitada</textarea>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Texto do botão</label>
+          <input id="btnText" type="text" value="Ver mais →" oninput="render()" maxlength="30"/>
+        </div>
+        <div class="field">
+          <label>Logo do produto (URL)</label>
+          <div class="logo-upload-row">
+            <input id="logoUrl" type="text" placeholder="https://..." oninput="render()"/>
+            <img id="logo-thumb" alt="logo"/>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title">Aparência</div>
+
+      <div class="field">
+        <label>Estilo do banner</label>
+        <div class="styles">
+          <button class="style-btn on" onclick="setStyle(this,'bar')">📌 Barra</button>
+          <button class="style-btn" onclick="setStyle(this,'card')">🃏 Card</button>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label>Cor de fundo</label>
+          <div class="clr-row">
+            <input type="color" id="bgColor" value="#6c63ff" oninput="render()"/>
+            <span id="bgHex">#6c63ff</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Cor do texto</label>
+          <div class="clr-row">
+            <input type="color" id="textColor" value="#ffffff" oninput="render()"/>
+            <span id="textHex">#ffffff</span>
+          </div>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Cor do botão</label>
+          <div class="clr-row">
+            <input type="color" id="btnColor" value="#ff6584" oninput="render()"/>
+            <span id="btnHex">#ff6584</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Posição</label>
+          <div class="positions">
+            <button class="pos-btn on" onclick="setPos(this,'bottom-left')">↙ Baixo esq.</button>
+            <button class="pos-btn" onclick="setPos(this,'bottom-center')">↓ Centro</button>
+            <button class="pos-btn" onclick="setPos(this,'bottom-right')">↘ Baixo dir.</button>
+            <button class="pos-btn" onclick="setPos(this,'top-center')">↑ Topo</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label>Delay de aparição (s)</label>
+          <div class="range-row">
+            <input type="range" id="delay" min="0" max="10" step="0.5" value="1.5" oninput="render()"/>
+            <span class="range-val" id="delayVal">1.5s</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Opacidade</label>
+          <div class="range-row">
+            <input type="range" id="opacity" min="0.5" max="1" step="0.01" value="0.97" oninput="render()"/>
+            <span class="range-val" id="opacityVal">97%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── COLUNA DIREITA: Preview + Gerar ── -->
+  <div>
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title">Preview ao vivo</div>
+      <div class="preview-shell">
+        <div id="prev-wrap">
+          <!-- banner injetado por JS -->
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Link para compartilhar</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6">
+        Clique em <strong style="color:var(--text)">Gerar link</strong>. Quem abrir verá o site com seu banner por cima — sem precisar de servidor.
+      </p>
+
+      <div class="out-box" id="outBox">Preencha as URLs e clique em Gerar link</div>
+
+      <div class="btn-row">
+        <button class="btn btn-p" onclick="generate()">⚡ Gerar link</button>
+        <button class="btn btn-g" id="copyBtn" onclick="copyLink()">📋 Copiar</button>
+        <button class="btn btn-g" id="testBtn" onclick="testLink()">🧪 Testar</button>
+      </div>
+
+      <div class="sep"></div>
+
+      <p style="font-size:12px;color:var(--muted);line-height:1.7">
+        💡 <strong style="color:var(--text)">Como funciona:</strong> toda a configuração fica codificada na própria URL (após o <code style="color:var(--accent)">#</code>). O <code>viewer.html</code> lê isso e exibe o site no iframe com seu banner flutuante. <strong style="color:var(--text)">Não precisa de banco de dados ou servidor.</strong>
+      </p>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+let currentPos   = 'bottom-left';
+let currentStyle = 'bar';
+let generatedUrl = '';
+
+const POS_STYLE = {
+  'bottom-left':   'bottom:12px;left:12px;right:auto;top:auto;',
+  'bottom-center': 'bottom:12px;left:50%;transform:translateX(-50%);right:auto;top:auto;',
+  'bottom-right':  'bottom:12px;right:12px;left:auto;top:auto;',
+  'top-center':    'top:12px;left:50%;transform:translateX(-50%);right:auto;bottom:auto;',
+};
+
+function setPos(el, pos) {
+  document.querySelectorAll('.pos-btn').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  currentPos = pos;
+  render();
+}
+function setStyle(el, style) {
+  document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  currentStyle = style;
+  render();
+}
+
+function v(id) { return document.getElementById(id); }
+
+function render() {
+  const adText    = v('adText').value    || 'Seu anúncio aqui';
+  const btnText   = v('btnText').value   || 'Ver mais';
+  const bgColor   = v('bgColor').value;
+  const textColor = v('textColor').value;
+  const btnColor  = v('btnColor').value;
+  const logoUrl   = v('logoUrl').value.trim();
+  const delay     = parseFloat(v('delay').value);
+  const opacity   = parseFloat(v('opacity').value);
+
+  v('bgHex').textContent      = bgColor;
+  v('textHex').textContent    = textColor;
+  v('btnHex').textContent     = btnColor;
+  v('delayVal').textContent   = delay + 's';
+  v('opacityVal').textContent = Math.round(opacity*100) + '%';
+
+  // logo thumb
+  const thumb = v('logo-thumb');
+  if (logoUrl) { thumb.src = logoUrl; thumb.style.display = 'block'; }
+  else          { thumb.style.display = 'none'; }
+
+  const wrap = v('prev-wrap');
+  wrap.style.cssText = 'position:absolute;' + POS_STYLE[currentPos];
+
+  if (currentStyle === 'bar') {
+    wrap.innerHTML = `
+      <div class="ban-bar" style="background:${bgColor};opacity:${opacity}">
+        ${logoUrl ? `<img src="${logoUrl}" style="width:32px;height:32px;border-radius:6px;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'"/>` : ''}
+        <span class="bm" style="color:${textColor}">${esc(adText)}</span>
+        <button class="bb" style="background:${btnColor};color:${textColor}">${esc(btnText)}</button>
+        <button class="bx" style="color:${textColor}">×</button>
+      </div>`;
+  } else {
+    wrap.innerHTML = `
+      <div class="ban-card" style="background:${bgColor};opacity:${opacity};position:relative">
+        <button class="bx-card" style="color:${textColor}">×</button>
+        ${logoUrl ? `<img class="logo-img" src="${logoUrl}" onerror="this.style.display='none'"/>` : ''}
+        <div class="bm" style="color:${textColor}">${esc(adText)}</div>
+        <button class="bb" style="background:${btnColor};color:${textColor}">${esc(btnText)}</button>
+      </div>`;
+  }
+}
+
+function generate() {
+  const targetUrl = v('targetUrl').value.trim();
+  const btnUrl    = v('btnUrl').value.trim();
+  if (!targetUrl) { toast('⚠ Preencha a URL de destino', '#ff6584'); return; }
+  if (!btnUrl)    { toast('⚠ Preencha o link do produto', '#ff6584'); return; }
+
+  const cfg = {
+    targetUrl,
+    adText:    v('adText').value.trim(),
+    btnText:   v('btnText').value.trim(),
+    btnUrl,
+    bgColor:   v('bgColor').value,
+    textColor: v('textColor').value,
+    btnColor:  v('btnColor').value,
+    pos:       currentPos,
+    style:     currentStyle,
+    delay:     parseFloat(v('delay').value),
+    opacity:   parseFloat(v('opacity').value),
+    logoUrl:   v('logoUrl').value.trim(),
+  };
+
+  const hash  = btoa(unescape(encodeURIComponent(JSON.stringify(cfg))));
+  const base  = window.location.href.replace('index.html','').replace(/#.*/,'');
+  generatedUrl = base + 'viewer.html#' + hash;
+
+  v('outBox').textContent = generatedUrl;
+  toast('✅ Link gerado!');
+}
+
+function copyLink() {
+  if (!generatedUrl) { toast('⚠ Gere o link primeiro', '#ff6584'); return; }
+  navigator.clipboard.writeText(generatedUrl).then(() => toast('📋 Link copiado!'));
+}
+function testLink() {
+  if (!generatedUrl) { toast('⚠ Gere o link primeiro', '#ff6584'); return; }
+  window.open(generatedUrl, '_blank');
+}
+
+function toast(msg, bg = '#43d9a2') {
+  const t = v('toast');
+  t.textContent = msg;
+  t.style.background = bg;
+  t.style.color = bg === '#43d9a2' ? '#0c0c10' : '#fff';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+render();
+</script>
+</body>
+</html>
