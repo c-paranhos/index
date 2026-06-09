@@ -23,13 +23,6 @@ html,body{height:100%;overflow:hidden;background:#0c0c10;font-family:-apple-syst
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   flex:1;text-align:center;
 }
-.tb-cta{
-  font-size:12px;font-weight:600;color:#6c63ff;
-  text-decoration:none;white-space:nowrap;
-  padding:4px 12px;border:1px solid #6c63ff44;border-radius:20px;
-  transition:background .2s;
-}
-.tb-cta:hover{background:#6c63ff22}
 
 /* ── iframe ── */
 #frame{
@@ -100,8 +93,7 @@ html,body{height:100%;overflow:hidden;background:#0c0c10;font-family:-apple-syst
 <div id="topbar">
   <div class="tb-logo">Link<span>Banner</span></div>
   <div class="tb-url" id="tb-url">carregando...</div>
-  <a class="tb-cta" href="index.html" target="_blank">Criar link ↗</a>
-</div>
+  </div>
 
 <iframe id="frame" allowfullscreen sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation"></iframe>
 
@@ -114,9 +106,10 @@ html,body{height:100%;overflow:hidden;background:#0c0c10;font-family:-apple-syst
 
 <script>
 (function(){
+  // ── 1. Ler e decodificar config do hash ──
   const hash = window.location.hash.slice(1);
   if (!hash) {
-    showError('Nenhuma configuração encontrada na URL.<br><a href="index.html">Criar um link</a>');
+    showError('Nenhuma configuração encontrada na URL.');
     return;
   }
 
@@ -124,7 +117,7 @@ html,body{height:100%;overflow:hidden;background:#0c0c10;font-family:-apple-syst
   try {
     cfg = JSON.parse(decodeURIComponent(escape(atob(hash))));
   } catch(e) {
-    showError('URL inválida ou corrompida.<br><a href="index.html">Criar um novo link</a>');
+    showError('URL inválida ou corrompida.');
     return;
   }
 
@@ -133,14 +126,16 @@ html,body{height:100%;overflow:hidden;background:#0c0c10;font-family:-apple-syst
     return;
   }
 
-  // Define o texto fictício da URL no topo
+  // Define a identificação do site no topo
   const tbUrl = document.getElementById('tb-url');
   tbUrl.textContent = cfg.targetUrl;
 
-  // Carrega a imagem enviada pela URL (ou usa o mockup padrão caso não exista)
+  // ── 2. Carregar imagem dinâmica no iframe via srcdoc ──
+  const frame = document.getElementById('frame');
+  
+  // Captura o link da imagem enviado ou usa a foto genérica de dashboard como fallback
   const imagemFinalDoSite = cfg.bgSiteUrl || "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426&auto=format&fit=crop"; 
   
-  const frame = document.getElementById('frame');
   frame.srcdoc = `
     <!DOCTYPE html>
     <html lang="pt-BR">
