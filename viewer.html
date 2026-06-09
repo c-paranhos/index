@@ -93,7 +93,7 @@ html,body{height:100%;overflow:hidden;background:#0c0c10;font-family:-apple-syst
 <div id="topbar">
   <div class="tb-logo">Link<span>Banner</span></div>
   <div class="tb-url" id="tb-url">carregando...</div>
-  </div>
+</div>
 
 <iframe id="frame" allowfullscreen sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation"></iframe>
 
@@ -126,23 +126,22 @@ html,body{height:100%;overflow:hidden;background:#0c0c10;font-family:-apple-syst
     return;
   }
 
-  // Define a identificação do site no topo
+  // Tenta extrair o hostname limpo para exibir na topbar informativa
   const tbUrl = document.getElementById('tb-url');
-  tbUrl.textContent = cfg.targetUrl;
+  try { tbUrl.textContent = new URL(cfg.targetUrl).hostname; } catch{ tbUrl.textContent = cfg.targetUrl; }
 
-  // ── 2. Carregar imagem dinâmica no iframe via srcdoc ──
+  // ── 2. Carregar imagem dinâmica + Botão de Redirecionamento da Notícia no iframe via srcdoc ──
   const frame = document.getElementById('frame');
-  
-  // Captura o link da imagem enviado ou usa a foto genérica de dashboard como fallback
   const imagemFinalDoSite = cfg.bgSiteUrl || "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426&auto=format&fit=crop"; 
-  
+  const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
   frame.srcdoc = `
     <!DOCTYPE html>
     <html lang="pt-BR">
     <head>
       <meta charset="UTF-8">
       <style>
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #0c0c10; }
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #0c0c10; font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; }
         .site-bg {
           width: 100%;
           height: 100%;
@@ -151,9 +150,29 @@ html,body{height:100%;overflow:hidden;background:#0c0c10;font-family:-apple-syst
           background-position: top center;
           background-repeat: no-repeat;
         }
+        /* Botão para ler a notícia real */
+        .btn-news {
+          position: fixed;
+          top: 16px;
+          right: 16px;
+          background: #43d9a2;
+          color: #0c0c10;
+          padding: 10px 20px;
+          font-size: 13px;
+          font-weight: 700;
+          border-radius: 8px;
+          text-decoration: none;
+          box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+          transition: transform 0.2s;
+          z-index: 999999;
+        }
+        .btn-news:hover {
+          transform: scale(1.04);
+        }
       </style>
     </head>
     <body>
+      <a class="btn-news" href="${esc(cfg.targetUrl)}" target="_blank" rel="noopener">📄 Ler Notícia Completa ↗</a>
       <div class="site-bg"></div>
     </body>
     </html>
@@ -161,8 +180,6 @@ html,body{height:100%;overflow:hidden;background:#0c0c10;font-family:-apple-syst
 
   // ── 3. Montar banner flutuante ──
   const banner = document.getElementById('banner');
-  const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-
   const s = cfg.style || 'bar';
   const logoHtml = cfg.logoUrl
     ? `<img class="logo" src="${esc(cfg.logoUrl)}" onerror="this.style.display='none'" alt=""/>`
