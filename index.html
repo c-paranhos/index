@@ -172,13 +172,13 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
 
   <div>
     <div class="card" style="margin-bottom:20px">
-      <div class="card-title">URLs obrigatórias</div>
+      <div class="card-title">Links de Redirecionamento</div>
       <div class="field">
-        <label>Identificação do Site de Destino (Ex: globo.com)</label>
-        <input id="targetUrl" type="text" placeholder="globo.com" value="meusite.com.br" />
+        <label>URL real da Notícia ou Blog (Botão do Frame)</label>
+        <input id="targetUrl" type="url" placeholder="https://g1.globo.com/noticia-da-materia" value="https://g1.globo.com" />
       </div>
       <div class="field">
-        <label>URL do produto afiliado (link de destino do botão)</label>
+        <label>URL do produto afiliado (Link de destino do Botão do Banner)</label>
         <input id="btnUrl" type="url" placeholder="https://go.hotmart.com/XXXXX" />
       </div>
     </div>
@@ -207,7 +207,7 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
     <div class="card" style="margin-bottom:20px">
       <div class="card-title">Aparência & Imagem de Fundo</div>
       <div class="field">
-        <label>Link da Imagem de Fundo (O Banner estático do Site)</label>
+        <label>Link da Imagem de Fundo (O Print do Site/Blog)</label>
         <input id="bgSiteUrl" type="text" placeholder="https://link-da-imagem.com/print.jpg" oninput="render()" />
       </div>
       <div class="field">
@@ -371,7 +371,7 @@ function render() {
 function generate() {
   const targetUrl = v('targetUrl').value.trim();
   const btnUrl    = v('btnUrl').value.trim();
-  if (!targetUrl) { toast('⚠ Preencha a URL de destino', '#ff6584'); return; }
+  if (!targetUrl) { toast('⚠ Preencha a URL real da notícia', '#ff6584'); return; }
   if (!btnUrl)    { toast('⚠ Preencha o link do produto', '#ff6584'); return; }
 
   const cfg = {
@@ -387,7 +387,7 @@ function generate() {
     delay:     parseFloat(v('delay').value),
     opacity:   parseFloat(v('opacity').value),
     logoUrl:   v('logoUrl').value.trim(),
-    bgSiteUrl: v('bgSiteUrl').value.trim() // <-- Guardando corretamente no hash
+    bgSiteUrl: v('bgSiteUrl').value.trim()
   };
 
   const hash  = btoa(unescape(encodeURIComponent(JSON.stringify(cfg))));
