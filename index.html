@@ -92,12 +92,12 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
 
 /* ── Preview ── */
 .preview-shell{
-  background-size: cover;
-  background-position: top center;
+  background:repeating-linear-gradient(45deg,#111118,#111118 12px,#0e0e15 12px,#0e0e15 24px);
   border-radius:10px;overflow:hidden;position:relative;
   height:220px;border:1px solid var(--border);
   display:flex;align-items:center;justify-content:center;
 }
+.preview-shell::after{content:'prévia do site de destino';font-size:12px;color:#2e2e3e;letter-spacing:.05em;pointer-events:none}
 #prev-wrap{position:absolute;pointer-events:none}
 
 /* banner bar */
@@ -165,21 +165,33 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
 
 <div class="hero">
   <h1>Coloque seu anúncio em<br><span>qualquer site da internet</span></h1>
-  <p>Configure o banner, gere o link e compartilhe. Quem clicar vê o cenário com seu anúncio flutuando.</p>
+  <p>Configure o banner, gere o link e compartilhe. Quem clicar vê o site com seu anúncio flutuando.</p>
 </div>
 
 <div class="wrap">
 
   <div>
     <div class="card" style="margin-bottom:20px">
-      <div class="card-title">Links de Redirecionamento</div>
+      <div class="card-title">Configurações das URLs</div>
       <div class="field">
-        <label>URL real da Notícia ou Blog (Botão do Frame)</label>
-        <input id="targetUrl" type="url" placeholder="https://g1.globo.com/noticia-da-materia" value="https://g1.globo.com" />
+        <label>URL real da Notícia ou Blog de destino</label>
+        <input id="targetUrl" type="url" placeholder="https://g1.globo.com/noticia/..." value="https://g1.globo.com" />
       </div>
       <div class="field">
-        <label>URL do produto afiliado (Link de destino do Botão do Banner)</label>
+        <label>URL do produto afiliado (link de destino do botão)</label>
         <input id="btnUrl" type="url" placeholder="https://go.hotmart.com/XXXXX" />
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title">Miniatura de Compartilhamento (Redes Sociais)</div>
+      <div class="field">
+        <label>Título da Notícia / Matéria</label>
+        <input id="shareTitle" type="text" placeholder="Ex: Urgente: Nova Descoberta Impressiona Cientistas!" value="" />
+      </div>
+      <div class="field">
+        <label>URL da Imagem da Notícia (Capa para Redes Sociais)</label>
+        <input id="shareImage" type="url" placeholder="https://site.com/imagem-da-materia.jpg" value="" />
       </div>
     </div>
 
@@ -205,11 +217,7 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
     </div>
 
     <div class="card" style="margin-bottom:20px">
-      <div class="card-title">Aparência & Imagem de Fundo</div>
-      <div class="field">
-        <label>Link da Imagem de Fundo (O Print do Site/Blog)</label>
-        <input id="bgSiteUrl" type="text" placeholder="https://link-da-imagem.com/print.jpg" oninput="render()" />
-      </div>
+      <div class="card-title">Aparência do Banner</div>
       <div class="field">
         <label>Estilo do banner</label>
         <div class="styles">
@@ -273,7 +281,7 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
   <div>
     <div class="card" style="margin-bottom:20px">
       <div class="card-title">Preview ao vivo</div>
-      <div class="preview-shell" id="previewShell">
+      <div class="preview-shell">
         <div id="prev-wrap"></div>
       </div>
     </div>
@@ -281,9 +289,9 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
     <div class="card">
       <div class="card-title">Link para compartilhar</div>
       <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6">
-        Clique em <strong>Gerar link</strong> para empacotar as configurações e o link da sua imagem.
+        Clique em <strong>Gerar link</strong> para empacotar as configurações da notícia e do anúncio.
       </p>
-      <div class="out-box" id="outBox">Preencha os campos e clique em Gerar link</div>
+      <div class="out-box" id="outBox">Preencha as URLs e clique em Gerar link</div>
       <div class="btn-row">
         <button class="btn btn-p" onclick="generate()">⚡ Gerar link</button>
         <button class="btn btn-g" id="copyBtn" onclick="copyLink()">📋 Copiar</button>
@@ -299,7 +307,6 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
 let currentPos   = 'bottom-left';
 let currentStyle = 'bar';
 let generatedUrl = '';
-const DEFAULT_BG = "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426&auto=format&fit=crop";
 
 const POS_STYLE = {
   'bottom-left':   'bottom:12px;left:12px;right:auto;top:auto;',
@@ -330,7 +337,6 @@ function render() {
   const textColor = v('textColor').value;
   const btnColor  = v('btnColor').value;
   const logoUrl   = v('logoUrl').value.trim();
-  const bgSiteUrl = v('bgSiteUrl').value.trim() || DEFAULT_BG;
   const delay     = parseFloat(v('delay').value);
   const opacity   = parseFloat(v('opacity').value);
 
@@ -339,8 +345,6 @@ function render() {
   v('btnHex').textContent     = btnColor;
   v('delayVal').textContent   = delay + 's';
   v('opacityVal').textContent = Math.round(opacity*100) + '%';
-
-  v('previewShell').style.backgroundImage = `url('${bgSiteUrl}')`;
 
   const thumb = v('logo-thumb');
   if (logoUrl) { thumb.src = logoUrl; thumb.style.display = 'block'; }
@@ -371,11 +375,13 @@ function render() {
 function generate() {
   const targetUrl = v('targetUrl').value.trim();
   const btnUrl    = v('btnUrl').value.trim();
-  if (!targetUrl) { toast('⚠ Preencha a URL real da notícia', '#ff6584'); return; }
+  if (!targetUrl) { toast('⚠ Preencha a URL de destino', '#ff6584'); return; }
   if (!btnUrl)    { toast('⚠ Preencha o link do produto', '#ff6584'); return; }
 
   const cfg = {
     targetUrl,
+    shareTitle:v('shareTitle').value.trim(),
+    shareImage:v('shareImage').value.trim(),
     adText:    v('adText').value.trim(),
     btnText:   v('btnText').value.trim(),
     btnUrl,
@@ -386,13 +392,14 @@ function generate() {
     style:     currentStyle,
     delay:     parseFloat(v('delay').value),
     opacity:   parseFloat(v('opacity').value),
-    logoUrl:   v('logoUrl').value.trim(),
-    bgSiteUrl: v('bgSiteUrl').value.trim()
+    logoUrl:   v('logoUrl').value.trim()
   };
 
   const hash  = btoa(unescape(encodeURIComponent(JSON.stringify(cfg))));
   const base  = window.location.href.replace('index.html','').replace(/#.*/,'');
-  generatedUrl = base + 'viewer.html#' + hash;
+  
+  // Mudado de '#' para '?' para suportar leitura nativa de meta tags Open Graph
+  generatedUrl = base + 'viewer.html?d=' + hash;
 
   v('outBox').textContent = generatedUrl;
   toast('✅ Link gerado!');
