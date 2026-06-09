@@ -160,13 +160,12 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
   <div class="logo"><b>Link</b><span>Banner</span> <em>Pro</em></div>
   <nav>
     <a href="index.html">Editor</a>
-    <a href="viewer.html">Testar viewer</a>
   </nav>
 </header>
 
 <div class="hero">
   <h1>Coloque seu anúncio em<br><span>qualquer site da internet</span></h1>
-  <p>Configure o banner, gere o link e compartilhe. Quem clicar vê o site simulado com seu anúncio flutuando.</p>
+  <p>Configure o banner, gere o link e compartilhe. Quem clicar vê o cenário com seu anúncio flutuando.</p>
 </div>
 
 <div class="wrap">
@@ -174,24 +173,21 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
   <div>
     <div class="card" style="margin-bottom:20px">
       <div class="card-title">URLs obrigatórias</div>
-
       <div class="field">
-        <label>URL fictícia do site de destino (apenas para o topo)</label>
-        <input id="targetUrl" type="url" placeholder="g1.globo.com" value="meusite.com.br" />
+        <label>Identificação do Site de Destino (Ex: globo.com)</label>
+        <input id="targetUrl" type="text" placeholder="globo.com" value="meusite.com.br" />
       </div>
       <div class="field">
-        <label>URL do produto afiliado (link do botão)</label>
+        <label>URL do produto afiliado (link de destino do botão)</label>
         <input id="btnUrl" type="url" placeholder="https://go.hotmart.com/XXXXX" />
       </div>
     </div>
 
     <div class="card" style="margin-bottom:20px">
-      <div class="card-title">Conteúdo do banner</div>
-
+      <div class="card-title">Conteúdo do banner flutuante</div>
       <div class="field">
         <label>Texto do anúncio</label>
-        <textarea id="adText" rows="2" placeholder="Ex: Álbum Oficial Copa do Mundo 2026 Panini" oninput="render()"
-        >Álbum Oficial Copa do Mundo 2026 — Edição Limitada</textarea>
+        <textarea id="adText" rows="2" placeholder="Ex: Álbum Oficial Copa do Mundo 2026" oninput="render()">Álbum Oficial Copa do Mundo 2026 — Edição Limitada</textarea>
       </div>
       <div class="row2">
         <div class="field">
@@ -199,7 +195,7 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
           <input id="btnText" type="text" value="Ver mais →" oninput="render()" maxlength="30"/>
         </div>
         <div class="field">
-          <label>Logo do produto (URL)</label>
+          <label>Logo do produto (URL da Imagem)</label>
           <div class="logo-upload-row">
             <input id="logoUrl" type="text" placeholder="https://..." oninput="render()"/>
             <img id="logo-thumb" alt="logo"/>
@@ -209,31 +205,28 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
     </div>
 
     <div class="card" style="margin-bottom:20px">
-      <div class="card-title">Aparência & Cenário</div>
-
+      <div class="card-title">Aparência & Imagem de Fundo</div>
       <div class="field">
-        <label>Imagem de fundo do site (Link da Imagem/Banner)</label>
+        <label>Link da Imagem de Fundo (O Banner estático do Site)</label>
         <input id="bgSiteUrl" type="text" placeholder="https://link-da-imagem.com/print.jpg" oninput="render()" />
       </div>
-
       <div class="field">
-        <label>Estilo do banner flutuante</label>
+        <label>Estilo do banner</label>
         <div class="styles">
           <button class="style-btn on" onclick="setStyle(this,'bar')">📌 Barra</button>
           <button class="style-btn" onclick="setStyle(this,'card')">🃏 Card</button>
         </div>
       </div>
-
       <div class="row2">
         <div class="field">
-          <label>Cor de fundo banner</label>
+          <label>Cor de fundo</label>
           <div class="clr-row">
             <input type="color" id="bgColor" value="#6c63ff" oninput="render()"/>
             <span id="bgHex">#6c63ff</span>
           </div>
         </div>
         <div class="field">
-          <label>Cor do texto banner</label>
+          <label>Cor do texto</label>
           <div class="clr-row">
             <input type="color" id="textColor" value="#ffffff" oninput="render()"/>
             <span id="textHex">#ffffff</span>
@@ -258,7 +251,6 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
           </div>
         </div>
       </div>
-
       <div class="row2">
         <div class="field">
           <label>Delay de aparição (s)</label>
@@ -282,30 +274,21 @@ input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
     <div class="card" style="margin-bottom:20px">
       <div class="card-title">Preview ao vivo</div>
       <div class="preview-shell" id="previewShell">
-        <div id="prev-wrap">
-          </div>
+        <div id="prev-wrap"></div>
       </div>
     </div>
 
     <div class="card">
       <div class="card-title">Link para compartilhar</div>
       <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6">
-        Clique em <strong style="color:var(--text)">Gerar link</strong>. Quem abrir verá a imagem de fundo escolhida com o seu banner interativo por cima.
+        Clique em <strong>Gerar link</strong> para empacotar as configurações e o link da sua imagem.
       </p>
-
-      <div class="out-box" id="outBox">Preencha as URLs e clique em Gerar link</div>
-
+      <div class="out-box" id="outBox">Preencha os campos e clique em Gerar link</div>
       <div class="btn-row">
         <button class="btn btn-p" onclick="generate()">⚡ Gerar link</button>
         <button class="btn btn-g" id="copyBtn" onclick="copyLink()">📋 Copiar</button>
         <button class="btn btn-g" id="testBtn" onclick="testLink()">🧪 Testar</button>
       </div>
-
-      <div class="sep"></div>
-
-      <p style="font-size:12px;color:var(--muted);line-height:1.7">
-        💡 <strong style="color:var(--text)">Como funciona:</strong> Os dados e o link da imagem ficam criptografados na própria URL. Sem banco de dados ou complicação.
-      </p>
     </div>
   </div>
 </div>
@@ -357,10 +340,8 @@ function render() {
   v('delayVal').textContent   = delay + 's';
   v('opacityVal').textContent = Math.round(opacity*100) + '%';
 
-  // Atualiza a imagem de fundo do preview shell
   v('previewShell').style.backgroundImage = `url('${bgSiteUrl}')`;
 
-  // logo thumb
   const thumb = v('logo-thumb');
   if (logoUrl) { thumb.src = logoUrl; thumb.style.display = 'block'; }
   else          { thumb.style.display = 'none'; }
@@ -406,7 +387,7 @@ function generate() {
     delay:     parseFloat(v('delay').value),
     opacity:   parseFloat(v('opacity').value),
     logoUrl:   v('logoUrl').value.trim(),
-    bgSiteUrl: v('bgSiteUrl').value.trim() // Salva o link da imagem na URL gerada
+    bgSiteUrl: v('bgSiteUrl').value.trim() // <-- Guardando corretamente no hash
   };
 
   const hash  = btoa(unescape(encodeURIComponent(JSON.stringify(cfg))));
