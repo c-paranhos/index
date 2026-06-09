@@ -4,6 +4,11 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>LinkBanner Viewer</title>
+
+<meta id="og-title" property="og:title" content="Notícia Importante" />
+<meta id="og-image" property="og:image" content="" />
+<meta property="og:type" content="article" />
+
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden;background:#0c0c10;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
@@ -106,80 +111,58 @@ html,body{height:100%;overflow:hidden;background:#0c0c10;font-family:-apple-syst
 
 <script>
 (function(){
-  // ── 1. Ler e decodificar config do hash ──
-  const hash = window.location.hash.slice(1);
-  if (!hash) {
+  // ── 1. Ler e decodificar config dos Query Parameters (?d=...) ──
+  const urlParams = new URLSearchParams(window.location.search);
+  const dataParam = urlParams.get('d');
+  
+  if (!dataParam) {
     showError('Nenhuma configuração encontrada na URL.');
     return;
   }
 
   let cfg;
   try {
-    cfg = JSON.parse(decodeURIComponent(escape(atob(hash))));
+    cfg = JSON.parse(decodeURIComponent(escape(atob(dataParam))));
   } catch(e) {
     showError('URL inválida ou corrompida.');
     return;
   }
 
   if (!cfg.targetUrl) {
-    showError('Configuração incompleta.');
+    showError('URL de destino não encontrada na configuração.');
     return;
   }
 
-  // Tenta extrair o hostname limpo para exibir na topbar informativa
+  // Injetar Título Customizado na Aba e nas Tags Open Graph para Redes Sociais
+  if (cfg.shareTitle) {
+    document.title = cfg.shareTitle;
+    document.getElementById('og-title').setAttribute('content', cfg.shareTitle);
+  }
+  if (cfg.shareImage) {
+    document.getElementById('og-image').setAttribute('content', cfg.shareImage);
+  }
+
+  // ── 2. Carregar site no iframe ──
+  const frame = document.getElementById('frame');
   const tbUrl = document.getElementById('tb-url');
   try { tbUrl.textContent = new URL(cfg.targetUrl).hostname; } catch{ tbUrl.textContent = cfg.targetUrl; }
 
-  // ── 2. Carregar imagem dinâmica + Botão de Redirecionamento da Notícia no iframe via srcdoc ──
-  const frame = document.getElementById('frame');
-  const imagemFinalDoSite = cfg.bgSiteUrl || "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426&auto=format&fit=crop"; 
+  frame.src = cfg.targetUrl;
+
+  // Fallback para sites que bloqueiam iframe (X-Frame-Options)
+  frame.addEventListener('load', () => {
+    try {
+      const doc = frame.contentDocument || frame.contentWindow.document;
+      if (!doc || !doc.body) throw new Error('blocked');
+    } catch(e) {
+      showFrameBlockedNotice(cfg);
+    }
+  });
+
+  // ── 3. Montar banner ──
+  const banner = document.getElementById('banner');
   const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
-  frame.srcdoc = `
-    <!DOCTYPE html>
-    <html lang="pt-BR">
-    <head>
-      <meta charset="UTF-8">
-      <style>
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #0c0c10; font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; }
-        .site-bg {
-          width: 100%;
-          height: 100%;
-          background-image: url('${imagemFinalDoSite}');
-          background-size: cover;
-          background-position: top center;
-          background-repeat: no-repeat;
-        }
-        /* Botão para ler a notícia real */
-        .btn-news {
-          position: fixed;
-          top: 16px;
-          right: 16px;
-          background: #43d9a2;
-          color: #0c0c10;
-          padding: 10px 20px;
-          font-size: 13px;
-          font-weight: 700;
-          border-radius: 8px;
-          text-decoration: none;
-          box-shadow: 0 4px 16px rgba(0,0,0,0.35);
-          transition: transform 0.2s;
-          z-index: 999999;
-        }
-        .btn-news:hover {
-          transform: scale(1.04);
-        }
-      </style>
-    </head>
-    <body>
-      <a class="btn-news" href="${esc(cfg.targetUrl)}" target="_blank" rel="noopener">📄 Ler Notícia Completa ↗</a>
-      <div class="site-bg"></div>
-    </body>
-    </html>
-  `;
-
-  // ── 3. Montar banner flutuante ──
-  const banner = document.getElementById('banner');
   const s = cfg.style || 'bar';
   const logoHtml = cfg.logoUrl
     ? `<img class="logo" src="${esc(cfg.logoUrl)}" onerror="this.style.display='none'" alt=""/>`
@@ -234,6 +217,20 @@ html,body{height:100%;overflow:hidden;background:#0c0c10;font-family:-apple-syst
     const el = document.getElementById('error');
     document.getElementById('error-msg').innerHTML = msg;
     el.style.display = 'flex';
+  }
+
+  function showFrameBlockedNotice(cfg) {
+    frame.srcdoc = `<!DOCTYPE html><html><body style="margin:0;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:sans-serif;background:#f5f5f8;color:#333;text-align:center;padding:32px">
+      <div style="font-size:48px;margin-bottom:16px">🔒</div>
+      <h2 style="margin-bottom:10px;font-size:20px">Este site não permite ser incorporado</h2>
+      <p style="color:#666;font-size:14px;margin-bottom:24px;max-width:400px;line-height:1.6">
+        Alguns sites grandes bloqueiam exibição em frames por segurança.
+        O banner do seu anúncio ainda aparece corretamente.
+      </p>
+      <a href="${cfg.targetUrl}" target="_blank" style="padding:10px 24px;background:#6c63ff;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
+        Abrir ${new URL(cfg.targetUrl).hostname} em nova aba ↗
+      </a>
+    </body></html>`;
   }
 })();
 </script>
