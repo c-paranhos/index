@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>LinkBanner Viewer</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#0c0c10;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+
+/* ── Barra de topo (branding) ── */
+#topbar{
+  position:fixed;top:0;left:0;right:0;height:36px;z-index:99999;
+  background:rgba(12,12,16,0.88);backdrop-filter:blur(10px);
+  border-bottom:1px solid #25252f;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 14px;gap:12px;
+}
+.tb-logo{font-size:13px;font-weight:700;color:#6c63ff;letter-spacing:-.3px;white-space:nowrap}
+.tb-logo span{color:#f0eff8}
+.tb-url{
+  font-size:12px;color:#7a7990;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  flex:1;text-align:center;
+}
+.tb-cta{
+  font-size:12px;font-weight:600;color:#6c63ff;
+  text-decoration:none;white-space:nowrap;
+  padding:4px 12px;border:1px solid #6c63ff44;border-radius:20px;
+  transition:background .2s;
+}
+.tb-cta:hover{background:#6c63ff22}
+
+/* ── iframe ── */
+#frame{
+  position:fixed;
+  top:36px;left:0;right:0;bottom:0;
+  width:100%;height:calc(100% - 36px);
+  border:none;background:#fff;
+}
+
+/* ── Banner flutuante ── */
+#banner{
+  position:fixed;
+  z-index:99998;
+  opacity:0;
+  transition:opacity .5s ease, transform .5s ease;
+  pointer-events:none;
+}
+#banner.visible{opacity:1;pointer-events:auto}
+
+/* Estilos de banner */
+.ban-bar{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 18px;border-radius:10px;
+  font-size:14px;
+  box-shadow:0 8px 32px rgba(0,0,0,.5);
+}
+.ban-bar .bm{flex:1;font-weight:500;line-height:1.4}
+.ban-bar .bb{
+  padding:8px 18px;border-radius:7px;font-size:13px;font-weight:700;
+  border:none;cursor:pointer;white-space:nowrap;text-decoration:none;
+  display:inline-block;
+}
+.ban-bar .bx{
+  font-size:22px;line-height:1;opacity:.5;background:none;
+  border:none;cursor:pointer;flex-shrink:0;padding:0 2px;
+}
+.ban-bar img.logo{width:36px;height:36px;border-radius:7px;object-fit:cover;flex-shrink:0}
+
+.ban-card{
+  padding:16px 18px;border-radius:12px;text-align:center;
+  font-size:14px;box-shadow:0 8px 32px rgba(0,0,0,.5);
+  position:relative;width:230px;
+}
+.ban-card .bx-c{
+  position:absolute;top:8px;right:10px;
+  font-size:18px;line-height:1;opacity:.4;
+  background:none;border:none;cursor:pointer;
+}
+.ban-card img.logo{width:44px;height:44px;border-radius:9px;object-fit:cover;margin:0 auto 10px;display:block}
+.ban-card .bm{font-weight:600;line-height:1.4;margin-bottom:12px}
+.ban-card .bb{
+  width:100%;padding:9px;border-radius:7px;font-size:13px;font-weight:700;
+  border:none;cursor:pointer;text-decoration:none;display:block;
+}
+
+/* ── Erros ── */
+#error{
+  position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:#0c0c10;color:#f0eff8;text-align:center;padding:32px;z-index:99999;display:none;
+}
+#error h2{font-size:24px;margin-bottom:12px;color:#ff6584}
+#error p{font-size:15px;color:#7a7990;line-height:1.7;max-width:480px}
+#error a{color:#6c63ff;text-decoration:none}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="tb-logo">Link<span>Banner</span></div>
+  <div class="tb-url" id="tb-url">carregando...</div>
+  <a class="tb-cta" href="index.html" target="_blank">Criar link ↗</a>
+</div>
+
+<iframe id="frame" allowfullscreen sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation"></iframe>
+
+<div id="banner"></div>
+
+<div id="error">
+  <h2>❌ Não foi possível carregar</h2>
+  <p id="error-msg"></p>
+</div>
+
+<script>
+(function(){
+  // ── 1. Ler e decodificar config do hash ──
+  const hash = window.location.hash.slice(1);
+  if (!hash) {
+    showError('Nenhuma configuração encontrada na URL.<br><a href="index.html">Criar um link</a>');
+    return;
+  }
+
+  let cfg;
+  try {
+    cfg = JSON.parse(decodeURIComponent(escape(atob(hash))));
+  } catch(e) {
+    showError('URL inválida ou corrompida.<br><a href="index.html">Criar um novo link</a>');
+    return;
+  }
+
+  if (!cfg.targetUrl) {
+    showError('URL de destino não encontrada na configuração.');
+    return;
+  }
+
+  // ── 2. Carregar site no iframe ──
+  const frame = document.getElementById('frame');
+  const tbUrl = document.getElementById('tb-url');
+  try { tbUrl.textContent = new URL(cfg.targetUrl).hostname; } catch{ tbUrl.textContent = cfg.targetUrl; }
+
+  frame.src = cfg.targetUrl;
+
+  // Fallback: se o iframe bloquear (X-Frame-Options), abre numa nova tab
+  frame.addEventListener('load', () => {
+    try {
+      // Tenta acessar o contentDocument — vai lançar erro se bloqueado
+      const doc = frame.contentDocument || frame.contentWindow.document;
+      if (!doc || !doc.body) throw new Error('blocked');
+    } catch(e) {
+      // Site bloqueou iframe — mostramos aviso mas mantemos o banner
+      showFrameBlockedNotice(cfg);
+    }
+  });
+
+  // ── 3. Montar banner ──
+  const banner = document.getElementById('banner');
+  const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  const s = cfg.style || 'bar';
+  const logoHtml = cfg.logoUrl
+    ? `<img class="logo" src="${esc(cfg.logoUrl)}" onerror="this.style.display='none'" alt=""/>`
+    : '';
+  const linkBtn = `href="${esc(cfg.btnUrl || '#')}" target="_blank" rel="noopener"`;
+
+  if (s === 'card') {
+    banner.innerHTML = `
+      <div class="ban-card" style="background:${cfg.bgColor};opacity:${cfg.opacity||1}">
+        <button class="bx-c" style="color:${cfg.textColor}" onclick="closeBanner()">×</button>
+        ${logoHtml}
+        <div class="bm" style="color:${cfg.textColor}">${esc(cfg.adText||'')}</div>
+        <a class="bb" style="background:${cfg.btnColor};color:${cfg.textColor}" ${linkBtn}>${esc(cfg.btnText||'Ver mais')}</a>
+      </div>`;
+  } else {
+    banner.innerHTML = `
+      <div class="ban-bar" style="background:${cfg.bgColor};opacity:${cfg.opacity||1}">
+        ${logoHtml}
+        <span class="bm" style="color:${cfg.textColor}">${esc(cfg.adText||'')}</span>
+        <a class="bb" style="background:${cfg.btnColor};color:${cfg.textColor}" ${linkBtn}>${esc(cfg.btnText||'Ver mais')}</a>
+        <button class="bx" style="color:${cfg.textColor}" onclick="closeBanner()">×</button>
+      </div>`;
+  }
+
+  // ── 4. Posicionar banner ──
+  const pos = cfg.pos || 'bottom-center';
+  const GAP = '16px';
+  const posMap = {
+    'bottom-left':   { bottom:GAP, left:GAP },
+    'bottom-center': { bottom:GAP, left:'50%', transform:'translateX(-50%)' },
+    'bottom-right':  { bottom:GAP, right:GAP },
+    'top-center':    { top:'calc(36px + 12px)', left:'50%', transform:'translateX(-50%)' },
+  };
+  const p = posMap[pos] || posMap['bottom-center'];
+  Object.assign(banner.style, p);
+
+  // ── 5. Animar entrada com delay ──
+  banner.style.transform = (banner.style.transform || '') + ' translateY(20px)';
+  const delay = (cfg.delay ?? 1.5) * 1000;
+  setTimeout(() => {
+    banner.style.transform = (p.transform || '');
+    banner.classList.add('visible');
+  }, delay);
+
+  window.closeBanner = function() {
+    banner.style.opacity = '0';
+    banner.style.transform += ' translateY(10px)';
+    setTimeout(() => banner.remove(), 400);
+  };
+
+  function showError(msg) {
+    const el = document.getElementById('error');
+    document.getElementById('error-msg').innerHTML = msg;
+    el.style.display = 'flex';
+  }
+
+  function showFrameBlockedNotice(cfg) {
+    // Site bloqueou iframe: exibe página de aviso com link para abrir
+    frame.srcdoc = `<!DOCTYPE html><html><body style="margin:0;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:sans-serif;background:#f5f5f8;color:#333;text-align:center;padding:32px">
+      <div style="font-size:48px;margin-bottom:16px">🔒</div>
+      <h2 style="margin-bottom:10px;font-size:20px">Este site não permite ser incorporado</h2>
+      <p style="color:#666;font-size:14px;margin-bottom:24px;max-width:400px;line-height:1.6">
+        Alguns sites grandes (UOL, G1, etc.) bloqueiam exibição em frames por segurança.
+        O banner do seu anúncio ainda aparece corretamente.
+      </p>
+      <a href="${cfg.targetUrl}" target="_blank" style="padding:10px 24px;background:#6c63ff;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
+        Abrir ${new URL(cfg.targetUrl).hostname} em nova aba ↗
+      </a>
+    </body></html>`;
+  }
+})();
+</script>
+</body>
+</html>
